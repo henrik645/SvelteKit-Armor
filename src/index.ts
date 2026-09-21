@@ -1,5 +1,9 @@
 import { redirect, type Handle } from "@sveltejs/kit";
-import { loginPathWithRedirect } from "./routes/login";
+import {
+	armorLoginFactory,
+	type ArmorLogin,
+	loginPathWithRedirect,
+} from "./routes/login";
 import type { ArmorConfig, ArmorOpenIdConfig } from "./contracts";
 import { routeByPathFactory } from "./routes/routes";
 import { ArmorOpenIdConfigError } from "./errors";
@@ -7,20 +11,24 @@ import { ArmorRefresh, armorRefreshFactory } from "./utils/refresh";
 
 export * from "./contracts";
 export * from "./session/cookie";
+export type { ArmorLogin, ArmorLoginOptions } from "./routes/login";
 export { armorRefreshFactory } from "./utils/refresh";
 export * from "./errors";
 
 export interface Armor extends ArmorRefresh {
 	readonly handle: Handle;
+	readonly login: ArmorLogin;
 }
 
 export function armor(config: ArmorConfig): Armor {
 	const routeByPath = routeByPathFactory(config);
 	const refresh = armorRefreshFactory(config);
+	const login = armorLoginFactory(config);
 	const requireLogin = config.requireLogin ?? (() => true);
 
 	return {
 		...refresh,
+		login,
 		async handle({ event, resolve }) {
 			const route = routeByPath.get(event.url.pathname);
 
