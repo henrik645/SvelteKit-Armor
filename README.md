@@ -44,6 +44,50 @@ const tokens = armorCookieSessionGet(event.cookies);
 
 For simplicity, we provide you with a default cookie session, but it is recommended to write your own session storage to store tokens in your database.
 
+## Logging
+
+Pass a logger with any of the supported log-level functions:
+
+```js
+const { handle: armorHandle } = armor({
+	// oauth and session configuration
+	logger: {
+		debug: (message, params) => console.debug(message, params),
+		info: (message, params) => console.info(message, params),
+		warning: (message, params) => console.warn(message, params),
+		error: (message, params) => console.error(message, params),
+	},
+});
+```
+
+Each log includes a stable `armorEvent` key in its parameters. Override the
+default level of individual events, or set an event to `false` to silence it:
+
+```js
+const { handle: armorHandle } = armor({
+	// oauth, session and logger configuration
+	logging: {
+		levels: {
+			"oauth.state_mismatch": "info",
+			"auth.missing_tokens": false,
+		},
+	},
+});
+```
+
+| Event key | Default level |
+| --- | --- |
+| `auth.missing_tokens` | `debug` |
+| `oauth.login_redirect` | `debug` |
+| `oauth.login_callback` | `debug` |
+| `oauth.state_mismatch` | `warning` |
+| `oauth.login_error` | `error` |
+| `oauth.authorization_code` | `debug` |
+| `oauth.token_exchange` | `debug` |
+| `oauth.tokens_verified` | `debug` |
+| `oauth.logout_redirect` | `debug` |
+| `oauth.logout_callback` | `debug` |
+
 ## Routes
 
 Your app will now expose these routes:

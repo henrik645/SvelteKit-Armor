@@ -62,6 +62,20 @@ type LoggerFunction = (
 	params?: Record<string, unknown>,
 ) => void;
 
+export type ArmorLogLevel = "debug" | "info" | "warning" | "error";
+
+export type ArmorLogEvent =
+	| "auth.missing_tokens"
+	| "oauth.login_redirect"
+	| "oauth.login_callback"
+	| "oauth.state_mismatch"
+	| "oauth.login_error"
+	| "oauth.authorization_code"
+	| "oauth.token_exchange"
+	| "oauth.tokens_verified"
+	| "oauth.logout_redirect"
+	| "oauth.logout_callback";
+
 export interface ArmorConfig {
 	readonly session: {
 		readonly login: (
@@ -110,6 +124,13 @@ export interface ArmorConfig {
 		readonly warning?: LoggerFunction;
 		readonly error?: LoggerFunction;
 	};
+	readonly logging?: {
+		/**
+		 * Override the default log level for an event. Set an event to false
+		 * to silence it.
+		 */
+		readonly levels?: Partial<Record<ArmorLogEvent, ArmorLogLevel | false>>;
+	};
 	/**
 	 * Specify when a login is required. Defaults to force all paths.
 	 * @param event
@@ -120,7 +141,7 @@ export interface ArmorConfig {
 
 export interface ArmorOpenIdConfig extends Pick<
 	ArmorConfig,
-	"session" | "logger" | "requireLogin"
+	"session" | "logger" | "logging" | "requireLogin"
 > {
 	readonly oauth: Pick<
 		ArmorConfig["oauth"],

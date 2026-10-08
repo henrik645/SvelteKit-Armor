@@ -5,6 +5,7 @@ import { ROUTE_PATH_REDIRECT_LOGOUT } from "./redirect-logout";
 import type { RouteFactory } from "./routes";
 import { urlConcat } from "../utils/utils";
 import { ARMOR_LOGOUT } from "../browser";
+import { armorLog } from "../logging";
 
 export const ROUTE_PATH_LOGOUT = ARMOR_LOGOUT;
 
@@ -26,7 +27,9 @@ export const routeLogoutFactory: RouteFactory = (config: ArmorConfig) => {
 
 			const paramsStr = queryParamsCreate(params);
 
-			config.logger?.debug?.("Pre logout redirect.", { params });
+			armorLog(config, "oauth.logout_redirect", "Pre logout redirect.", {
+				params,
+			});
 
 			throw redirect(302, `${config.oauth.logoutEndpoint}?${paramsStr}`);
 		},

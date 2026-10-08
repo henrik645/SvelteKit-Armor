@@ -12,6 +12,7 @@ import {
 import { jwtVerifyIdToken } from "../utils/jwt";
 import { eventStateValid } from "../utils/event";
 import { ROUTE_PATH_LOGIN } from "./login";
+import { armorLog } from "../logging";
 
 export const ROUTE_PATH_REDIRECT_LOGIN = "/_armor/redirect/login";
 
@@ -64,13 +65,21 @@ export const routeRedirectLoginFactory: RouteFactory = (
 	return {
 		path: ROUTE_PATH_REDIRECT_LOGIN,
 		async handle({ event }) {
-			config.logger?.debug?.("Handle login redirect callback.");
+			armorLog(
+				config,
+				"oauth.login_callback",
+				"Handle login redirect callback.",
+			);
 
 			// If the states does not match, redirect the user to login.
 			// People bookmark the wrong pages all the time. Lets not
 			// do a throw here.
 			if (!eventStateValid(event)) {
-				config.logger?.warning?.("State missmatch");
+				armorLog(
+					config,
+					"oauth.state_mismatch",
+					"OAuth state mismatch. Redirecting to login.",
+				);
 				throw redirect(302, ROUTE_PATH_LOGIN);
 			}
 
@@ -80,7 +89,7 @@ export const routeRedirectLoginFactory: RouteFactory = (
 				const error_description =
 					event.url.searchParams.get("error_description") ?? undefined;
 
-				config.logger?.error?.("Login returned error.", {
+				armorLog(config, "oauth.login_error", "Login returned error.", {
 					error,
 					errorDescription: error_description,
 				});
@@ -101,7 +110,12 @@ export const routeRedirectLoginFactory: RouteFactory = (
 			}
 
 			const code = event.url.searchParams.get("code") ?? undefined;
-			config.logger?.debug?.("Get code from query params.", { code });
+			armorLog(
+				config,
+				"oauth.authorization_code",
+				"Get code from query params.",
+				{ code },
+			);
 			throwIfUndefined(code);
 
 			const exchange = await exchangeCodeForToken(
@@ -110,11 +124,15 @@ export const routeRedirectLoginFactory: RouteFactory = (
 				code,
 			);
 
-			config.logger?.debug?.("Exchange code for tokens.", { exchange });
+			armorLog(config, "oauth.token_exchange", "Exchange code for tokens.", {
+				exchange,
+			});
 
 			const idToken = await jwtVerifyIdToken(config, jwks, exchange.id_token);
 
-			config.logger?.debug?.("Extract and verify tokens.", { idToken });
+			armorLog(config, "oauth.tokens_verified", "Extract and verify tokens.", {
+				idToken,
+			});
 
 			await config.session.login(event, exchangeToTokens(exchange, idToken));
 

@@ -1,6 +1,7 @@
 import { redirect } from "@sveltejs/kit";
 import type { ArmorConfig } from "../contracts";
 import type { RouteFactory } from "./routes";
+import { armorLog } from "../logging";
 
 export const ROUTE_PATH_REDIRECT_LOGOUT = "/_armor/redirect/logout";
 
@@ -15,7 +16,11 @@ export const routeRedirectLogoutFactory: RouteFactory = (
 	return {
 		path: ROUTE_PATH_REDIRECT_LOGOUT,
 		async handle({ event }) {
-			config.logger?.debug?.("Handle logout redirect callback.");
+			armorLog(
+				config,
+				"oauth.logout_callback",
+				"Handle logout redirect callback.",
+			);
 
 			await config.session.logout(event);
 
