@@ -11,6 +11,7 @@ import { routeByPathFactory } from "./routes/routes";
 import { ArmorOpenIdConfigError } from "./errors";
 import { armorOauthResolve } from "./utils/utils";
 import { jwtVerifyIdToken } from "./utils/jwt";
+import { armorLog } from "./logging";
 
 export * from "./contracts";
 export * from "./session/cookie";
@@ -55,7 +56,9 @@ export function armor(config: ArmorConfig): Armor {
 			const tokens = await config.session.getTokens(event);
 
 			if (!tokens) {
-				config.logger?.warning?.(
+				armorLog(
+					config,
+					"auth.missing_tokens",
 					"Could not find tokens. Redirecting to login.",
 				);
 				armorRedirectToLogin(event);
